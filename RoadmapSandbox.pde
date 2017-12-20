@@ -22,6 +22,7 @@ PVector surfaceMouse;
 Matrix sandbox;
 
 boolean helpText = true;
+boolean gridLines = true;
 
 void setup() {
   size(800, 500, P3D);
@@ -85,7 +86,8 @@ void draw() {
   
   // Help Text
   if (helpText) {
-    text("Press 'h' to hide/show this text.\n\n\n" +
+    text("Press 'h' to hide/show this text.\n" +
+         "Press 'g' to hide/show grid lines.\n\n\n" +
          "Projection Map Key Commands:\n\n" +
          "  Press 'c' to turn on calibration mode.\n" +
          "  Press 's' to save calibration.\n" +
@@ -103,6 +105,11 @@ void keyPressed() {
   case 'h':
     // toggle help text
     helpText = !helpText;
+    break;
+  
+  case 'g':
+    // toggle help text
+    gridLines = !gridLines;
     break;
     
   case 'c':
@@ -142,5 +149,9 @@ void keyPressed() {
 }
 
 void mousePressed() {
+  sandbox.clickPiece(selectedID, surfaceMouse.x, surfaceMouse.y);
+}
+
+void mouseDragged() {
   sandbox.clickPiece(selectedID, surfaceMouse.x, surfaceMouse.y);
 }

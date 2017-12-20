@@ -50,7 +50,7 @@ class Matrix {
   // Create Random Roadmap pieces (useful when debugging without Colortizer)
   void randomMaps() {
     maps.clear();
-    for (int i=0; i<10; i++) {
+    for (int i=0; i<MAX_MAPS; i++) {
       int rotation = int(random(4));
       int u = int(random(GRID_U));
       int v = int(random(GRID_V));
@@ -72,7 +72,7 @@ class Matrix {
         id = tablePieceInput[u][v][0];
         rot = tablePieceInput[u][v][1];
         if (id >= 0) {
-          RoadMap piece = new RoadMap( id, rot, u, v, "" + id);
+          RoadMap piece = new RoadMap( id, rot, u, v-1, "" + id );
           maps.add(piece);
         }
       }
@@ -152,17 +152,19 @@ class Matrix {
   
   // The majority of our application's draw functions are located within render()
   void render(PGraphics p) {
-    p.stroke(255); // Define line colors as "white"
-    p.strokeWeight(2); // Define Line thickness as "2"
+    p.stroke(255, 50); // Define line colors as "white"
+    p.strokeWeight(3); // Define Line thickness as "2"
     
-    // GRID: Draw Vertical Grid Lines
-    for (int u=0; u<=GRID_U; u++) {
-      p.line((MARGIN_U + u)*cellW, MARGIN_V*cellH, (MARGIN_U + u)*cellW, (MARGIN_V+GRID_V)*cellH);
-    }
-    
-    // GRID: Draw Horizontal Grid Lines
-    for (int v=0; v<=GRID_V; v++) {
-      p.line(MARGIN_U*cellW, (MARGIN_V + v)*cellH, (MARGIN_U + GRID_U)*cellW, (MARGIN_V + v)*cellH);
+    if (gridLines) {
+      // GRID: Draw Vertical Grid Lines
+      for (int u=0; u<=GRID_U; u++) {
+        p.line((MARGIN_U + u)*cellW, MARGIN_V*cellH, (MARGIN_U + u)*cellW, (MARGIN_V+GRID_V)*cellH);
+      }
+      
+      // GRID: Draw Horizontal Grid Lines
+      for (int v=0; v<=GRID_V; v++) {
+        p.line(MARGIN_U*cellW, (MARGIN_V + v)*cellH, (MARGIN_U + GRID_U)*cellW, (MARGIN_V + v)*cellH);
+      }
     }
     
     // GRID: Draw Links + Weights
@@ -171,8 +173,8 @@ class Matrix {
         p.pushMatrix();
         p.translate( (MARGIN_U + 0.5) * cellW, (MARGIN_V + 0.5) * cellH );
         p.strokeCap(ROUND);
-        p.strokeWeight(pow(WEIGHT_CUT - l.weight, 1.5) + 2);
-        p.stroke(255, 255*float(2*WEIGHT_CUT-l.weight)/WEIGHT_CUT);
+        p.strokeWeight(pow(WEIGHT_CUT - l.weight, 1.1) + 2);
+        p.stroke(255, 255*float(WEIGHT_CUT-l.weight)/WEIGHT_CUT);
         p.line(l.u0*cellW, l.v0*cellH, l.uF*cellW, l.vF*cellH);
         p.popMatrix();
       }
@@ -226,7 +228,7 @@ class Matrix {
            10, 9*cellW, MARGIN_U*cellW - 20, TABLE_V*cellW);
     
     // SUMMARY: Draw Summary Martix in Bottom of Left-Hand Margin
-    float sumCellW = MARGIN_U * cellW / (maps.size() + 1);
+    float sumCellW = 0.95*MARGIN_U * cellW / (maps.size() + 1);
     p.pushMatrix();
     p.translate(0, (TABLE_V - MARGIN_V)*cellW - sumCellW*(maps.size()+1));
     
@@ -243,8 +245,8 @@ class Matrix {
       p.fill(0);
       p.textSize(sumCellW);
       p.textAlign(CENTER, CENTER);
-      p.text(maps.get(m).ID, (m + 1.5)*sumCellW, 0.5*sumCellW); // Horizontal Axis
-      p.text(maps.get(m).ID, 0.5*sumCellW, (m + 1.5)*sumCellW); // Vertical Axis
+      p.text(maps.get(m).ID, (m + 1.5)*sumCellW, 0.4*sumCellW); // Horizontal Axis
+      p.text(maps.get(m).ID, 0.5*sumCellW, (m + 1.4)*sumCellW); // Vertical Axis
     }
     
     // SUMMARY: Draw Links / Edge / Connection Weights
@@ -273,6 +275,8 @@ class Matrix {
 
 // A global variable to determine which roadmap ID to use when clicking
 int selectedID = 0;
+// Maximum Number of Roadmaps Expected
+int MAX_MAPS = 10;
 
 // The Roadmap Class functions as the "Nodes" in our netowrk.
 class RoadMap {
@@ -288,8 +292,9 @@ class RoadMap {
     this.u = u;               // u-coordinate upon table
     this.v = v;               // v-coordinate upon table
     this.name = name;         // human-friendly name of Roadmap
+    
     colorMode(HSB);
-    col = color(255 * float(ID) / 10, 255, 255); // Color of Roadmap
+    col = color(255.0 * ID / MAX_MAPS, 255, 255); // Color of Roadmap
     colorMode(RGB);
   }
 }
@@ -310,6 +315,6 @@ class Edge {
     
     // Calculate strength of connection based upon the "city block" 
     // distance (i.e. calculated as orthogonal path)
-    weight = abs(uF-u0) + abs(vF-v0);
+    weight = abs(uF-u0) + abs(vF-v0) - 2;
   }
 }
