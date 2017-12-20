@@ -1,60 +1,55 @@
 /**
- * This is a simple example of a Roadmapping Exercise.
- */
-
-/**
+ * RoadMap Sandbox, Dec 2017
+ * Ira Winder, ira@mit.edu
+ *
+ * This is a simple example of a Roadmapping Exercise. 
  * This is a also a simple example of how to use the Keystone library.
  *
- * To use this example in the real world, you need a projector
- * and a surface you want to project your Processing sketch onto.
- *
- * Simply drag the corners of the CornerPinSurface so that they
- * match the physical surface's corners. The result will be an
- * undistorted projection, regardless of projector position or 
- * orientation.
- *
- * You can also create more than one Surface object, and project
- * onto multiple flat surfaces using a single projector.
- *
- * This extra flexbility can comes at the sacrifice of more or 
- * less pixel resolution, depending on your projector and how
- * many surfaces you want to map. 
+ * The Scripts may be "Run" on either
+ *    (a) PC Screen and controlled with Mouse and keyboard
+ *    (b) Tactile Matrix projection and controlled with Colortizer (i.e. Lego)
  */
  
+// These are libraries and objects needed for projection mapping (i.e. Keystone Library Objects)
 import deadpixel.keystone.*;
 Keystone ks;
 CornerPinSurface surface;
 PGraphics offscreen;
 PVector surfaceMouse;
 
-Matrix table;
+// The matrix class holds the bulk of our application.
+// We've created a new implementation of my class called "sandbox"
+Matrix sandbox;
+
+boolean helpText = true;
 
 void setup() {
+  size(800, 500, P3D);
+  //size(1920, 1080, P3D); // Airbus CDF Projector Resolution.  Use this size for your projector
+  
   // Keystone will only work with P3D or OPENGL renderers, 
   // since it relies on texture mapping to deform
-  size(800, 500, P3D);
-  
-  ks = new Keystone(this);
-  surface = ks.createCornerPinSurface(1200 , 1200, 20);
-  
   // We need an offscreen buffer to draw the surface we
   // want projected
   // note that we're matching the resolution of the
   // CornerPinSurface.
   // (The offscreen buffer can be P2D or P3D)
+  ks = new Keystone(this);
+  surface = ks.createCornerPinSurface(1200 , 1200, 20);
   offscreen = createGraphics(1200, 1200, P3D);
   
   // Initialize the Core Application
-  table = new Matrix(offscreen.width, offscreen.height);
+  sandbox = new Matrix(offscreen.width, offscreen.height);
   
-  // Initialize Connection to "Colortizer"
+  // Initialize connection to webcam via "Colortizer"
   initUDP();
   
-  // Load the saved coordinates for projection-map
+  // Load the previously saved projection-map calibration
   try {
     ks.load();
   } catch (Exception e) {
-    println("Error locating keystone.xml file.  Try saving one with the 's' key.");
+    ks.save();
+    ks.load();
   }
 }
 
@@ -63,20 +58,22 @@ void draw() {
   // Decode Lego pieces only if there is a change in Colortizer input
   if (changeDetected) {
     println("Input Detected");
-    table.decodePieces();
+    sandbox.decodePieces();
     changeDetected = false;
   }
   
   // Convert the mouse coordinate into surface coordinates
   // this will allow you to use mouse events inside the 
-  // surface from your screen. 
+  // keystone surface from your screen. 
   surfaceMouse = surface.getTransformedMouse();
   
   // Draw the scene, offscreen
   offscreen.beginDraw();
   offscreen.background(0);
-  table.render(offscreen);
-  offscreen.ellipse(surfaceMouse.x, surfaceMouse.y, 10, 10);
+  // Render the application onto our projection canvas
+  sandbox.render(offscreen);
+  // Draw a mouse cursor
+  offscreen.ellipse(surfaceMouse.x - 3, surfaceMouse.y - 9, 10, 10);
   offscreen.endDraw();
 
   // most likely, you'll want a black background to minimize
@@ -85,12 +82,28 @@ void draw() {
 
   // render the scene, transformed using the corner pin surface
   surface.render(offscreen);
+  
+  // Help Text
+  if (helpText) {
+    text("Press 'h' to hide/show this text.\n\n\n" +
+         "Projection Map Key Commands:\n\n" +
+         "  Press 'c' to turn on calibration mode.\n" +
+         "  Press 's' to save calibration.\n" +
+         "  Press 'l' to load calibration.\n" +
+         "  Use mouse to adjust.\n\n\n" +
+         "Application Key Commands:\n\n" +
+         "  Press 'r' for random configuration\n" +
+         "  Press '0' - '9' to select ID", 20, 30, 300, height);
+  }
 }
-
-int selectedID = 0;
 
 void keyPressed() {
   switch(key) {
+    
+  case 'h':
+    // toggle help text
+    helpText = !helpText;
+    break;
     
   case 'c':
     // enter/leave calibration mode, where surfaces can be warped 
@@ -110,7 +123,7 @@ void keyPressed() {
   
   case 'r':
     // Reinitializes Random Maps
-    table.randomMaps();
+    sandbox.randomMaps();
     break;
   
   // Select ID
@@ -128,6 +141,6 @@ void keyPressed() {
   }
 }
 
-void mouseClicked() {
-  table.clickPiece(selectedID, surfaceMouse.x, surfaceMouse.y);
+void mousePressed() {
+  sandbox.clickPiece(selectedID, surfaceMouse.x, surfaceMouse.y);
 }

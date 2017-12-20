@@ -1,3 +1,9 @@
+/* The Matrix class contains most of the methods and objects 
+ * needed to compute and render our sandbox application.
+ * If you wanted to write your own application, you might
+ * start by using the Matrix class as a template.
+ */
+
 class Matrix {
   
   // Offset of grif from upper left corning in Lego Cells
@@ -13,17 +19,29 @@ class Matrix {
   int GRID_V = 20;
   
   int WEIGHT_CUT = 6;
+  /* WEIGHT_CUT is the number of discrete ways allowed to differentiate connectivity between two roadmaps.
+   * 5 - Figures of Merit (FOMs) Model Shared
+   * 4 - Figures of Merit (FOMs) Numbers Shared
+   * 3 - Figures of Merit (FOMs) Identified
+   * 2 - Bi -directional Dependencies Indentified
+   * 1 - Uni-directional Dependencies Indentified
+   * 0 - No Dependencies Indentified
+   */
   
-  // Dimension of each cell in Pixels
+  // Dimension of each Lego cell in Pixels
   float cellW, cellH;
   
+  // List of Objects describing Roadmaps and their Connections. 
+  // Together, these are a network graph.
   ArrayList<RoadMap> maps;
   ArrayList<Edge> links;
   
   Matrix(int w, int h) {
+    // Calculate the dimensions of a Lego cell in pixels
     cellW = float(w) / TABLE_U;
     cellH = float(h) / TABLE_V;
     
+    // Initialize our parameters
     maps = new ArrayList<RoadMap>();
     links = new ArrayList<Edge>();
     randomMaps();
@@ -33,9 +51,14 @@ class Matrix {
   void randomMaps() {
     maps.clear();
     for (int i=0; i<10; i++) {
-      RoadMap m = new RoadMap(i, int(random(4)), int(random(GRID_U)), int(random(GRID_V)), "" + i);
+      int rotation = int(random(4));
+      int u = int(random(GRID_U));
+      int v = int(random(GRID_V));
+      String name = "" + i;
+      RoadMap m = new RoadMap(i, rotation, u, v, name);
       maps.add(m);
     }
+    // Initialize linkages based upon Roadmaps
     initLinks();
   }
   
@@ -44,8 +67,8 @@ class Matrix {
     maps.clear();
     int id, rot;
     // Cycle through each 17x20 Table Grid
-    for (int u=0; u<table.GRID_U; u++) {
-      for (int v=1; v<table.GRID_V; v++) {
+    for (int u=0; u<sandbox.GRID_U; u++) {
+      for (int v=1; v<sandbox.GRID_V; v++) {
         id = tablePieceInput[u][v][0];
         rot = tablePieceInput[u][v][1];
         if (id >= 0) {
@@ -54,6 +77,7 @@ class Matrix {
         }
       }
     }
+    // Initialize linkages based upon Roadmaps
     initLinks();
   }
   
@@ -92,15 +116,18 @@ class Matrix {
         maps.add(piece);
       }
     }
-    table.initLinks();
+    // Initialize linkages based upon Roadmaps
+    initLinks();
   }
   
+  // Convert pixel position into Lego grid position
   PVector mouseToGrid(int mX, int mY) {
     int u = int(mX/cellW) - MARGIN_U;
     int v = int(mY/cellH) - MARGIN_V;
     return new PVector(u,v);
   }
   
+  // Retreat the specific position in the list of a Roadmap object with a particular ID
   int getMapIndex(int id) {
     int index = 0;
     for (int m=0; m<maps.size(); m++) {
@@ -109,7 +136,7 @@ class Matrix {
     return index;
   }
   
-  // generate edges for given Roadmap Space
+  // Initialize linkages based upon Roadmaps
   void initLinks() {
     links.clear();
     // Interates through every link in the network
@@ -123,22 +150,22 @@ class Matrix {
     }
   }
   
+  // The majority of our application's draw functions are located within render()
   void render(PGraphics p) {
+    p.stroke(255); // Define line colors as "white"
+    p.strokeWeight(2); // Define Line thickness as "2"
     
-    p.stroke(255);
-    p.strokeWeight(2);
-    
-    // Vertical Grid Lines
+    // GRID: Draw Vertical Grid Lines
     for (int u=0; u<=GRID_U; u++) {
       p.line((MARGIN_U + u)*cellW, MARGIN_V*cellH, (MARGIN_U + u)*cellW, (MARGIN_V+GRID_V)*cellH);
     }
     
-    // Horizontal Grid Lines
+    // GRID: Draw Horizontal Grid Lines
     for (int v=0; v<=GRID_V; v++) {
       p.line(MARGIN_U*cellW, (MARGIN_V + v)*cellH, (MARGIN_U + GRID_U)*cellW, (MARGIN_V + v)*cellH);
     }
     
-    // Draw Links + Weights
+    // GRID: Draw Links + Weights
     for (Edge l: links) {
       if (l.weight < WEIGHT_CUT) {
         p.pushMatrix();
@@ -151,29 +178,32 @@ class Matrix {
       }
     }
     
+    // Sometimes ending and beginning a draw session allows layers and opacities to render correctly ...
     p.endDraw();
     p.beginDraw();
     
-    // Draw Roadmap Tiles + Attributes
+    // GRID: Draw Roadmap Tiles + Attributes
     for (RoadMap m: maps) {
       p.pushMatrix();
       p.translate((MARGIN_U + m.u)*cellW, (MARGIN_V + m.v)*cellH);
       
-      // Draw Square
+      // GRID: Draw Shape on Lego Tile 
       p.fill( 0 );
       p.stroke(m.col, 100);
       p.strokeWeight(5);
       p.ellipse( 0.5*cellW, 0.5*cellH, 0.9*cellW, 0.9*cellH );
       
-      //Rotate Coordinate Systems
+      // GRID: Rotate Coordinate Systems
       p.pushMatrix();
       p.translate(0.5*cellW, 0.5*cellH);
       p.rotate(m.rotation*0.5*PI);
-      // Draw Arrow
+      
+      // GRID: Draw Arrow
       p.fill( m.col );
       p.noStroke();
       p.triangle(0, -0.5*cellW, 0.5*cellW, 0, -0.5*cellW, 0);
-      // Draw ID Text
+      
+      // GRID: Draw ID Text
       p.textSize(24);
       p.fill(255);
       p.textAlign(CENTER, CENTER);
@@ -183,7 +213,7 @@ class Matrix {
       p.popMatrix();
     }
     
-    // Draw Title and Explanations
+    // MARGIN: Draw Title and Explanations in Left-Hand Margin
     p.fill(255);
     p.textAlign(LEFT, TOP);
     p.textSize(40);
@@ -191,17 +221,16 @@ class Matrix {
     p.textSize(25);
     p.text("Design\nStructure\nMatrix\n\nPrototype by\nAirbus XP\nOCD", 10, 3.5*cellW);
     p.textSize(20);
-    p.text("Roadmaps, represented by numbered tiles, are interconnected technology strategies. Move RoadMap tiles closer to each other to increase their relative dependence upon each other.", 
-      10, 9*cellW, MARGIN_U*cellW - 20, TABLE_V*cellW);
-    p.textAlign(CENTER, CENTER);
-    p.text("Press 'r' to generate random Roadmap Configuration", (0.5*GRID_U+MARGIN_U)*cellW, (TABLE_V - 0.5)*cellW);
-    p.text("Press number keys 0 - 9 to select a Roadmap ID", (0.5*GRID_U+MARGIN_U)*cellW, 0.5*cellW);
+    p.text("Roadmaps, represented by numbered tiles, are interconnected technology strategies. " +
+           "Move RoadMap tiles closer to each other to increase their relative dependence upon each other.", 
+           10, 9*cellW, MARGIN_U*cellW - 20, TABLE_V*cellW);
     
-    // Draw Summary Martix in Margin
+    // SUMMARY: Draw Summary Martix in Bottom of Left-Hand Margin
     float sumCellW = MARGIN_U * cellW / (maps.size() + 1);
     p.pushMatrix();
     p.translate(0, (TABLE_V - MARGIN_V)*cellW - sumCellW*(maps.size()+1));
-    // Draw Legend
+    
+    // SUMMARY: Draw Legend
     p.fill(255);
     p.textAlign(CENTER, CENTER);
     p.text("RoadMap Origin", 0.55*MARGIN_U*cellW, -25);
@@ -217,7 +246,8 @@ class Matrix {
       p.text(maps.get(m).ID, (m + 1.5)*sumCellW, 0.5*sumCellW); // Horizontal Axis
       p.text(maps.get(m).ID, 0.5*sumCellW, (m + 1.5)*sumCellW); // Vertical Axis
     }
-    // Draw Links / Edge / Connection Weights
+    
+    // SUMMARY: Draw Links / Edge / Connection Weights
     for (Edge l: links) {
       if (l.weight < WEIGHT_CUT) {
         p.pushMatrix();
@@ -228,7 +258,8 @@ class Matrix {
         p.popMatrix();
       }
     }
-    // Draw selection box around selected RoadMap
+    
+    // SUMMARY: Draw selection box around selected RoadMap
     p.noFill();
     p.stroke(255);
     p.strokeWeight(3);
@@ -237,11 +268,13 @@ class Matrix {
     p.rect(0, (m + 1)*sumCellW, (m + 2)*sumCellW, sumCellW); // Vertical Axis
     p.popMatrix();
     
-    println(maps.size(), links.size());
-    
   }
 }
 
+// A global variable to determine which roadmap ID to use when clicking
+int selectedID = 0;
+
+// The Roadmap Class functions as the "Nodes" in our netowrk.
 class RoadMap {
   int ID;
   int u, v;
@@ -250,30 +283,33 @@ class RoadMap {
   int rotation; // 0, 1, 2, 3
   
   RoadMap(int ID, int rotation, int u, int v, String name) {
-    this.ID = ID;
-    this.rotation = rotation;
-    this.u = u;
-    this.v = v;
-    this.name = name;
+    this.ID = ID;             // ID of roadmap
+    this.rotation = rotation; // rotation of piece (0, 1, 2, or 3 representing 90-degree intervals)
+    this.u = u;               // u-coordinate upon table
+    this.v = v;               // v-coordinate upon table
+    this.name = name;         // human-friendly name of Roadmap
     colorMode(HSB);
-    col = color(255 * float(ID) / 10, 255, 255);
+    col = color(255 * float(ID) / 10, 255, 255); // Color of Roadmap
     colorMode(RGB);
   }
 }
 
+// The Edge Class describes the nature of the connections in our network
 class Edge {
   int u0, v0, uF, vF;
   int ID_0, ID_F;
   int weight;
   
   Edge(int u0, int v0, int ID_0, int uF, int vF, int ID_F) {
-    this.u0 = u0;
-    this.v0 = v0;
-    this.ID_0 = ID_0;
-    this.uF = uF;
-    this.vF = vF;
-    this.ID_F = ID_F;
+    this.u0 = u0;      // u coordinate of origin node
+    this.v0 = v0;      // v coordinate of origin node
+    this.ID_0 = ID_0;  // ID of origin node
+    this.uF = uF;      // u coordinate of destination node
+    this.vF = vF;      // v coordinate of destination node
+    this.ID_F = ID_F;  // ID of destination node
     
+    // Calculate strength of connection based upon the "city block" 
+    // distance (i.e. calculated as orthogonal path)
     weight = abs(uF-u0) + abs(vF-v0);
   }
 }

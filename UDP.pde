@@ -1,14 +1,18 @@
-// This script ensures that a string is "caught" via UDP and coded into principal inputs of:
-// Compatible "Colortizer V4.2" and later
-// - tablePieceInput[][] or tablePieceInput[][][2] (rotation)
-// - UMax, VMax
+/*  This script handles communications with Colortizer V4.2 and later. 
+ *  Global variables to use in your application are: 
+ *  tablePieceInput[][][0] (ID), tablePieceInput[][][1] (rotation), UMax, VMax, ID_Max
+ */
+ 
+/* 
+ *  !! Don't change this tab unless you're sure you know what you're doing !!
+ */
 
 // Data Extents Parameters
 
-  // Display Matrix Size (cells rendered to screen)
-  int U_MAX = 18;
-  int V_MAX = 22;
-  int ID_MAX = 15;
+// Display Matrix Size (cells rendered to screen)
+int U_MAX = 18;
+int V_MAX = 22;
+int ID_MAX = 15;
     
 // Arrays that holds current ID information of rectilinear tile arrangement.
 int tablePieceInput[][][] = new int[U_MAX][V_MAX][2];
@@ -32,7 +36,6 @@ UDP udp;  // define the UDP object
 boolean connection = false;
 boolean busyImporting = false;
 boolean changeDetected = false;
-boolean outputReady = false;
 
 void initUDP() {
   udp = new UDP( this, portIN );
