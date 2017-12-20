@@ -198,7 +198,7 @@ class Matrix {
       // GRID: Rotate Coordinate Systems
       p.pushMatrix();
       p.translate(0.5*cellW, 0.5*cellH);
-      p.rotate(m.rotation*0.5*PI);
+      p.rotate(-m.rotation*0.5*PI);
       
       // GRID: Draw Arrow
       p.fill( m.col );
@@ -243,7 +243,7 @@ class Matrix {
       p.rect(0, (m + 1)*sumCellW, sumCellW, sumCellW); // Vertical Axis
       //Text
       p.fill(0);
-      p.textSize(sumCellW);
+      p.textSize(0.8*sumCellW);
       p.textAlign(CENTER, CENTER);
       p.text(maps.get(m).ID, (m + 1.5)*sumCellW, 0.4*sumCellW); // Horizontal Axis
       p.text(maps.get(m).ID, 0.5*sumCellW, (m + 1.4)*sumCellW); // Vertical Axis
@@ -276,7 +276,7 @@ class Matrix {
 // A global variable to determine which roadmap ID to use when clicking
 int selectedID = 0;
 // Maximum Number of Roadmaps Expected
-int MAX_MAPS = 10;
+int MAX_MAPS = 16;
 
 // The Roadmap Class functions as the "Nodes" in our netowrk.
 class RoadMap {
