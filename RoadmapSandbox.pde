@@ -1,5 +1,9 @@
 /**
- * This is a simple example of how to use the Keystone library.
+ * This is a simple example of a Roadmapping Exercise.
+ */
+
+/**
+ * This is a also a simple example of how to use the Keystone library.
  *
  * To use this example in the real world, you need a projector
  * and a surface you want to project your Processing sketch onto.
@@ -16,7 +20,7 @@
  * less pixel resolution, depending on your projector and how
  * many surfaces you want to map. 
  */
-
+ 
 import deadpixel.keystone.*;
 
 Keystone ks;
