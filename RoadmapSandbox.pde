@@ -22,11 +22,10 @@
  */
  
 import deadpixel.keystone.*;
-
 Keystone ks;
 CornerPinSurface surface;
-
 PGraphics offscreen;
+PVector surfaceMouse;
 
 Matrix table;
 
@@ -71,7 +70,7 @@ void draw() {
   // Convert the mouse coordinate into surface coordinates
   // this will allow you to use mouse events inside the 
   // surface from your screen. 
-  PVector surfaceMouse = surface.getTransformedMouse();
+  surfaceMouse = surface.getTransformedMouse();
   
   // Draw the scene, offscreen
   offscreen.beginDraw();
@@ -88,10 +87,11 @@ void draw() {
   surface.render(offscreen);
 }
 
-
+int selectedID = 0;
 
 void keyPressed() {
   switch(key) {
+    
   case 'c':
     // enter/leave calibration mode, where surfaces can be warped 
     // and moved
@@ -112,6 +112,22 @@ void keyPressed() {
     // Reinitializes Random Maps
     table.randomMaps();
     break;
+  
+  // Select ID
+  case '0': selectedID = 0; break;
+  case '1': selectedID = 1; break;
+  case '2': selectedID = 2; break;
+  case '3': selectedID = 3; break;
+  case '4': selectedID = 4; break;
+  case '5': selectedID = 5; break;
+  case '6': selectedID = 6; break;
+  case '7': selectedID = 7; break;
+  case '8': selectedID = 8; break;
+  case '9': selectedID = 9; break;
     
   }
+}
+
+void mouseClicked() {
+  table.clickPiece(selectedID, surfaceMouse.x, surfaceMouse.y);
 }

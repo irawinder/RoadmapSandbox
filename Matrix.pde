@@ -57,6 +57,58 @@ class Matrix {
     initLinks();
   }
   
+  // Add/Remove a piece from a location
+  void clickPiece(int id, float mX, float mY) {
+    boolean removed = false;
+    PVector uv = mouseToGrid(int(mX), int(mY));
+    int clickU = int(uv.x);
+    int clickV = int(uv.y);
+    if (clickU>=0 && clickU<GRID_U && clickV>=0 && clickV<GRID_V) {
+      int numRemoved = 0;
+      // Check for duplicate id and position and remove
+      for (int m=maps.size()-1; m>=0; m--) {
+        if (maps.get(m).ID == id && maps.get(m).u == clickU && maps.get(m).v == clickV) {
+          maps.remove(m);
+          removed = true;
+        }
+      }
+      // Check for existing piece and remove
+      for (int m=maps.size()-1; m>=0; m--) {
+        if (maps.get(m).u == clickU && maps.get(m).v == clickV) {
+          maps.remove(m);
+          removed = true;
+        } 
+      }
+      // Check for duplicate id and remove
+      for (int m=maps.size()-1; m>=0; m--) {
+        if (maps.get(m).ID == id && (maps.get(m).u != clickU || maps.get(m).v != clickV) && !removed) {
+          maps.remove(m);
+          // don't count duplicates as removed
+        }
+      }
+      // Add a Piece if another Piece was not removed
+      if (!removed) {
+        RoadMap piece = new RoadMap( id, 0, clickU, clickV, "" + id );
+        maps.add(piece);
+      }
+    }
+    table.initLinks();
+  }
+  
+  PVector mouseToGrid(int mX, int mY) {
+    int u = int(mX/cellW) - MARGIN_U;
+    int v = int(mY/cellH) - MARGIN_V;
+    return new PVector(u,v);
+  }
+  
+  int getMapIndex(int id) {
+    int index = 0;
+    for (int m=0; m<maps.size(); m++) {
+      if (maps.get(m).ID == id) index = m;
+    }
+    return index;
+  }
+  
   // generate edges for given Roadmap Space
   void initLinks() {
     links.clear();
@@ -142,7 +194,8 @@ class Matrix {
     p.text("Roadmaps, represented by numbered tiles, are interconnected technology strategies. Move RoadMap tiles closer to each other to increase their relative dependence upon each other.", 
       10, 9*cellW, MARGIN_U*cellW - 20, TABLE_V*cellW);
     p.textAlign(CENTER, CENTER);
-    p.text("Press 'r' to generate random Roadmap Configuration", 0.5*TABLE_U*cellW, (TABLE_V - 0.5)*cellW);
+    p.text("Press 'r' to generate random Roadmap Configuration", (0.5*GRID_U+MARGIN_U)*cellW, (TABLE_V - 0.5)*cellW);
+    p.text("Press number keys 0 - 9 to select a Roadmap ID", (0.5*GRID_U+MARGIN_U)*cellW, 0.5*cellW);
     
     // Draw Summary Martix in Margin
     float sumCellW = MARGIN_U * cellW / (maps.size() + 1);
@@ -168,14 +221,23 @@ class Matrix {
     for (Edge l: links) {
       if (l.weight < WEIGHT_CUT) {
         p.pushMatrix();
-        p.translate(sumCellW*(1+l.ID_0), sumCellW*(1+l.ID_F));
+        p.translate(sumCellW*(1+getMapIndex(l.ID_0)), sumCellW*(1+getMapIndex(l.ID_F)));
         p.fill(255*float(WEIGHT_CUT-l.weight)/WEIGHT_CUT);
         p.noStroke();
         p.rect(0, 0, sumCellW, sumCellW);
         p.popMatrix();
       }
     }
+    // Draw selection box around selected RoadMap
+    p.noFill();
+    p.stroke(255);
+    p.strokeWeight(3);
+    int m = getMapIndex(selectedID);
+    p.rect((m + 1)*sumCellW, 0, sumCellW, (m + 2)*sumCellW); // Horizontal Axis
+    p.rect(0, (m + 1)*sumCellW, (m + 2)*sumCellW, sumCellW); // Vertical Axis
     p.popMatrix();
+    
+    println(maps.size(), links.size());
     
   }
 }
@@ -194,7 +256,7 @@ class RoadMap {
     this.v = v;
     this.name = name;
     colorMode(HSB);
-    col = color(255 * float(ID) / 16, 255, 255);
+    col = color(255 * float(ID) / 10, 255, 255);
     colorMode(RGB);
   }
 }
