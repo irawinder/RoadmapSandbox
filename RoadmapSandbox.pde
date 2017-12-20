@@ -182,13 +182,18 @@ class Matrix {
       p.popMatrix();
     }
     
-    // Draw Title
+    // Draw Title and Explanations
     p.fill(255);
     p.textAlign(LEFT, TOP);
     p.textSize(40);
     p.text("RoadMap\nSandbox", 10, MARGIN_V*cellW);
     p.textSize(25);
     p.text("Design\nStructure\nMatrix\n\nPrototype by\nAirbus XP\nOCD", 10, 3.5*cellW);
+    p.textSize(20);
+    p.text("Roadmaps, represented by numbered tiles, are interconnected technology strategies. Move RoadMap tiles closer to each other to increase their relative dependence upon each other.", 
+      10, 9*cellW, MARGIN_U*cellW - 20, TABLE_V*cellW);
+    p.textAlign(CENTER, CENTER);
+    p.text("Press 'r' to generate random Roadmap Configuration", 0.5*TABLE_U*cellW, (TABLE_V - 0.5)*cellW);
     
     // Draw Summary Martix in Margin
     float sumCellW = MARGIN_U * cellW / (maps.size() + 1);
